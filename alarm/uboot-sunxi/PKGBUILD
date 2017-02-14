@@ -4,55 +4,64 @@
 buildarch=4
 
 pkgbase=uboot-sunxi
-pkgname=('uboot-a10-olinuxino-lime'
-         'uboot-a10s-olinuxino-micro'
-         'uboot-a13-olinuxino'
-         'uboot-a13-olinuxino-micro'
-         'uboot-a20-olinuxino-lime'
-         'uboot-a20-olinuxino-lime2'
-         'uboot-a20-olinuxino-micro'
-         'uboot-cubieboard'
-         'uboot-cubieboard2'
-         'uboot-cubietruck'
-         'uboot-pcduino'
-         'uboot-pcduino3'
-         'uboot-pcduino3-nano')
-pkgver=2017.01
-pkgrel=2
+pkgname=(#'uboot-a10-olinuxino-lime'
+         #'uboot-a10s-olinuxino-micro'
+         #'uboot-a13-olinuxino'
+         #'uboot-a13-olinuxino-micro'
+         #'uboot-a20-olinuxino-lime'
+         #'uboot-a20-olinuxino-lime2'
+         #'uboot-a20-olinuxino-micro'
+         #'uboot-cubieboard'
+         #'uboot-cubieboard2'
+         #'uboot-cubietruck'
+         #'uboot-pcduino'
+         #'uboot-pcduino3'
+         #'uboot-pcduino3-nano'
+         #'uboot-orangepi-pc'
+	 'uboot-orangepi-lite'
+)
+pkgver=2017.03rc1
+pkgvergit=2017.03-rc1
+pkgrel=3
 arch=('armv7h')
 url="http://git.denx.de/u-boot.git/"
 license=('GPL')
 makedepends=('git' 'bc' 'dtc' 'python2')
 backup=(boot/boot.txt boot/boot.scr)
-source=("ftp://ftp.denx.de/pub/u-boot/u-boot-${pkgver}.tar.bz2"
+source=("u-boot-${pkgvergit}::git+http://git.denx.de/u-boot.git"
+	#"ftp://ftp.denx.de/pub/u-boot/u-boot-${pkgvergit}.tar.bz2"
         'boot.txt'
         'mkscr')
-md5sums=('ad2d82d5b4fa548b2b95bbc26c9bad79'
+md5sums=('skip'
+	 #'96fdd57a44fc91ab06bba50207650fca'
          '95f60c0ae1315e986d8a2aee15d5f854'
          '021623a04afd29ac3f368977140cfbfd')
 
-boards=('A10-OLinuXino-Lime'
-        'A10s-OLinuXino-M'
-        'A13-OLinuXino'
-        'A13-OLinuXinoM'
-        'A20-OLinuXino-Lime'
-        'A20-OLinuXino-Lime2'
-        'A20-OLinuXino_MICRO'
-        'Cubieboard'
-        'Cubieboard2'
-        'Cubietruck'
-        'Linksprite_pcDuino'
-        'Linksprite_pcDuino3'
-        'Linksprite_pcDuino3_Nano')
+boards=(#'A10-OLinuXino-Lime'
+        #'A10s-OLinuXino-M'
+        #'A13-OLinuXino'
+        #'A13-OLinuXinoM'
+        #'A20-OLinuXino-Lime'
+        #'A20-OLinuXino-Lime2'
+        #'A20-OLinuXino_MICRO'
+        #'Cubieboard'
+        #'Cubieboard2'
+        #'Cubietruck'
+        #'Linksprite_pcDuino'
+        #'Linksprite_pcDuino3'
+        #'Linksprite_pcDuino3_Nano'
+	#'orangepi_pc'
+	'orangepi_lite'
+)
 
 prepare() {
-  cd u-boot-${pkgver}
+  cd u-boot-${pkgvergit}
 
   sed -i 's/env python$/&2/' tools/binman/binman{,.py}
 }
 
 build() {
-  cd u-boot-${pkgver}
+  cd u-boot-${pkgvergit}
 
   unset CFLAGS CXXFLAGS LDFLAGS
 
@@ -244,6 +253,34 @@ package_uboot-pcduino3-nano() {
 
   install -d "${pkgdir}"/boot
   install -Dm644 bin_Linksprite_pcDuino3_Nano/u-boot-sunxi-with-spl.bin "${pkgdir}"/boot
+
+  install -Dm644 boot.txt "${pkgdir}"/boot/boot.txt
+  install -Dm644 boot.scr "${pkgdir}"/boot/boot.scr
+  install -Dm755 mkscr "${pkgdir}"/boot/mkscr
+}
+
+package_uboot-orangepi-pc() {
+  pkgdesc="U-Boot for Orange Pi PC"
+  install=${pkgbase}.install
+  provides=('uboot-sunxi')
+  conflicts=('uboot-sunxi')
+
+  install -d "${pkgdir}"/boot
+  install -Dm644 bin_orangepi_pc/u-boot-sunxi-with-spl.bin "${pkgdir}"/boot
+
+  install -Dm644 boot.txt "${pkgdir}"/boot/boot.txt
+  install -Dm644 boot.scr "${pkgdir}"/boot/boot.scr
+  install -Dm755 mkscr "${pkgdir}"/boot/mkscr
+}
+
+package_uboot-orangepi-lite() {
+  pkgdesc="U-Boot for Orange Pi Lite"
+  install=${pkgbase}.install
+  provides=('uboot-sunxi')
+  conflicts=('uboot-sunxi')
+
+  install -d "${pkgdir}"/boot
+  install -Dm644 bin_orangepi_lite/u-boot-sunxi-with-spl.bin "${pkgdir}"/boot
 
   install -Dm644 boot.txt "${pkgdir}"/boot/boot.txt
   install -Dm644 boot.scr "${pkgdir}"/boot/boot.scr
