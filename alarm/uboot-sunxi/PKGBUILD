@@ -17,23 +17,22 @@ pkgname=(#'uboot-a10-olinuxino-lime'
          #'uboot-pcduino'
          #'uboot-pcduino3'
          #'uboot-pcduino3-nano'
-         #'uboot-orangepi-pc'
+         'uboot-orangepi-pc'
 	 'uboot-orangepi-lite'
 )
-pkgver=2017.03rc1
-pkgvergit=2017.03-rc1
-pkgrel=3
+pkgver=2017.03rc2
+pkgvergit=2017.03-rc2
+pkgrel=1
 arch=('armv7h')
 url="http://git.denx.de/u-boot.git/"
 license=('GPL')
 makedepends=('git' 'bc' 'dtc' 'python2')
 backup=(boot/boot.txt boot/boot.scr)
-source=("u-boot-${pkgvergit}::git+http://git.denx.de/u-boot.git"
-	#"ftp://ftp.denx.de/pub/u-boot/u-boot-${pkgvergit}.tar.bz2"
+source=(#"u-boot-${pkgvergit}::git+http://git.denx.de/u-boot.git"
+	"ftp://ftp.denx.de/pub/u-boot/u-boot-${pkgvergit}.tar.bz2"
         'boot.txt'
         'mkscr')
-md5sums=('skip'
-	 #'96fdd57a44fc91ab06bba50207650fca'
+md5sums=('3839a561c4176aed8f3d30e021b39b13'
          '95f60c0ae1315e986d8a2aee15d5f854'
          '021623a04afd29ac3f368977140cfbfd')
 
@@ -50,7 +49,7 @@ boards=(#'A10-OLinuXino-Lime'
         #'Linksprite_pcDuino'
         #'Linksprite_pcDuino3'
         #'Linksprite_pcDuino3_Nano'
-	#'orangepi_pc'
+	'orangepi_pc'
 	'orangepi_lite'
 )
 
