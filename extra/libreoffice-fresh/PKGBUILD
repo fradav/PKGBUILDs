@@ -18,9 +18,9 @@ _google_default_client_secret=0ZChLK6AxeA3Isu96MkwqDR4
 
 pkgbase=libreoffice-fresh
 pkgname=('libreoffice-fresh-sdk' 'libreoffice-fresh')
-_LOver=5.3.0.3
-pkgver=5.3.0
-pkgrel=2
+_LOver=5.3.3.2
+pkgver=5.3.3
+pkgrel=1
 arch=('i686' 'x86_64')
 license=('LGPL3')
 url="http://www.libreoffice.org/"
@@ -39,8 +39,8 @@ makedepends=('curl>=7.20.0' 'hunspell>=1.2.8' 'python>=3.6' 'libwpd>=0.9.2' 'lib
 	'libexttextcat' 'libcmis' 'gobject-introspection' #'libfbclient'
 	'libtommath' 'libzmf')
 
-#_mirror="https://download.documentfoundation.org/libreoffice/src/${pkgver}"
-_mirror="http://dev-builds.libreoffice.org/pre-releases/src"
+_mirror="https://download.documentfoundation.org/libreoffice/src/${pkgver}"
+#_mirror="http://dev-builds.libreoffice.org/pre-releases/src"
 _additional_source_url="http://dev-www.libreoffice.org/src"
 _additional_source_url2="http://dev-www.libreoffice.org/extern"
 source=(${_mirror}/libreoffice{,-help,-translations}-${_LOver}.tar.xz{,.asc}
@@ -106,11 +106,11 @@ noextract=(boost_1_60_0.tar.bz2
 	976734806026a4ef8bdd17937c8898b9-icu4c-57_1-src.tgz
 	185d60944ea767075d27247c3162b3bc-unowinreg.dll)
 validpgpkeys=('C2839ECAD9408FBE9531C3E9F434A1EFAFEEAEA3') # LibreOffice Build Team (CODE SIGNING KEY) <build@documentfoundation.org>
-sha256sums=('04b9215e1c4b8c7ce2d79b8e322bff8d097426a2d103476cf237cfd42262556e'
+sha256sums=('9632956926d9d5c9049ce5b81c2673f298ae73b873d53cce8cfaea8ee243619a'
             'SKIP'
-            'df58d501b9514160767810df0b0e4b44a01262244f81f83df8654b0ccd4b1a7f'
+            'f9b4fef5f449cdbbcb5796908d0536576585c511173bfccf2ca049b5dcbb0dc7'
             'SKIP'
-            '4321a57fba1012b30eae6e629f18d4139395fd5751af381dc87e31e084fca1d1'
+            '7f2d8da74b744bf7749602207b41c92225527ac34a2170601dd4fb9065bba6af'
             'SKIP'
             '686affff989ac2488f79a97b9479efb9f2abae035b5ed4d8226de6857933fd3b'
             '41d463d16c9894cd3317098d027c038039c6d896b9cbb9bad9c4e29959e10e9f'
@@ -321,7 +321,6 @@ package_libreoffice-fresh() {
 		'pstoedit:         translates PostScript and PDF graphics into other vector formats'
 		'libmythes:        for use in thesaurus'
 		'beanshell:       interactive java -- good for prototyping/macros'
-		'libmspack:        library for Microsoft compression formats for use in FontOOo'
 		'libwpg:           library for importing and converting WordPerfect Graphics format'
 		'sane:             for scanner access'
 		'unixodbc:         adds ODBC database support'

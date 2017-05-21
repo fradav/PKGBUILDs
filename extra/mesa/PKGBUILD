@@ -4,51 +4,61 @@
 
 # ALARM: Kevin Mihelich <kevin@archlinuxarm.org>
 #  - Removed DRI and Gallium3D drivers/packages for chipsets that don't exist in our ARM devices (intel, radeon, VMware svga).
-#  - Removed libgles, libegl and khrplatform-devel from conflicts for marvell-libgfx compatibility.
-#  - Moved .pc files to mesa-libgl that reference libraries in mesa-libgl
 
 pkgbase=mesa
-pkgname=('mesa' 'mesa-libgl' 'libva-mesa-driver')
-pkgver=13.0.4
+pkgname=('mesa' 'libva-mesa-driver')
+pkgver=17.1.0
 pkgrel=1
 arch=('i686' 'x86_64')
 makedepends=('python2-mako' 'libxml2' 'libx11' 'glproto' 'libdrm' 'dri2proto' 'dri3proto' 'presentproto' 
              'libxshmfence' 'libxxf86vm' 'libxdamage' 'libvdpau' 'libva' 'wayland' 'elfutils' 'llvm'
-             'libomxil-bellagio' 'libgcrypt' 'clang')
+             'libomxil-bellagio' 'clang' 'libglvnd' 'lm_sensors')
 url="http://mesa3d.sourceforge.net"
 license=('custom')
-source=(https://mesa.freedesktop.org/archive/${pkgver}/mesa-${pkgver}.tar.xz{,.sig}
+source=(https://mesa.freedesktop.org/archive/mesa-${pkgver}.tar.xz{,.sig}
         LICENSE
-        remove-libpthread-stubs.patch)
-sha256sums=('a95d7ce8f7bd5f88585e4be3144a341236d8c0fc91f6feaec59bb8ba3120e726'
+        0001-Fix-linkage-against-shared-glapi.patch
+        0001-glxglvnddispatch-Add-missing-dispatch-for-GetDriverC.patch
+        glvnd-fix-gl-dot-pc.patch)
+sha256sums=('cf234a6ed4764673886b6661553b54675776ef0898f774716173cec890ac3b17'
             'SKIP'
             '7fdc119cf53c8ca65396ea73f6d10af641ba41ea1dd2bd44a824726e01c8b3f2'
-            '75ab53ad44b95204c788a2988e97a5cb963bdbf6072a5466949a2afb79821c8f')
+            'c68d1522f9bce4ce31c92aa7a688da49f13043f5bb2254795b76dea8f47130b7'
+            '4a0620f9197a65f830e3c512faba374a4bde45fee9e11f82321774c24d08232d'
+            '64a77944a28026b066c1682c7258d02289d257b24b6f173a9f7580c48beed966')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
+validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') #  "Andres Gomez <tanty@igalia.com>"
 
 prepare() {
   cd ${srcdir}/mesa-${pkgver}
 
-  # Now mesa checks for libpthread-stubs - so remove the check
-  patch -Np1 -i ../remove-libpthread-stubs.patch
-  
+  # glvnd support patches - from Fedora
+  # non-upstreamed ones
+  patch -Np1 -i ../glvnd-fix-gl-dot-pc.patch
+  patch -Np1 -i ../0001-Fix-linkage-against-shared-glapi.patch
+  patch -Np1 -i ../0001-glxglvnddispatch-Add-missing-dispatch-for-GetDriverC.patch
+
   autoreconf -fiv
 }
 
 build() {
   cd ${srcdir}/mesa-${pkgver}
 
+  [[ $CARCH == "armv7h" ]] && GALLIUM=",etnaviv,imx"
+  [[ $CARCH == "armv7h" || $CARCH == "aarch64" ]] && GALLIUM+=",vc4"
+
   ./configure --prefix=/usr \
     --sysconfdir=/etc \
     --with-dri-driverdir=/usr/lib/xorg/modules/dri \
-    --with-gallium-drivers=freedreno,nouveau,swrast,virgl,vc4 \
+    --with-gallium-drivers=freedreno,nouveau,swrast,virgl${GALLIUM} \
     --with-dri-drivers=nouveau,swrast \
-    --with-egl-platforms=x11,drm,wayland \
-    --with-sha1=libgcrypt \
+    --with-platforms=x11,drm,wayland \
     --disable-xvmc \
-    --enable-gallium-llvm \
+    --enable-llvm \
     --enable-llvm-shared-libs \
     --enable-shared-glapi \
+    --enable-libglvnd \
+    --enable-lmsensors \
     --enable-egl \
     --enable-glx \
     --enable-glx-tls \
@@ -56,7 +66,8 @@ build() {
     --enable-gles2 \
     --enable-gbm \
     --enable-dri \
-    --enable-osmesa \
+    --enable-gallium-osmesa \
+    --enable-gallium-extra-hud \
     --enable-texture-float \
     --enable-omx \
     --enable-nine \
@@ -71,7 +82,7 @@ build() {
 
 package_libva-mesa-driver() {
   pkgdesc="VA-API implementation for gallium"
-  depends=('libdrm' 'libx11' 'llvm-libs' 'expat' 'libelf' 'libgcrypt' 'libxshmfence')
+  depends=('libdrm' 'libx11' 'llvm-libs' 'expat' 'libelf' 'libxshmfence' 'lm_sensors')
 
   install -m755 -d ${pkgdir}/usr/lib
   cp -rv ${srcdir}/fakeinstall/usr/lib/dri ${pkgdir}/usr/lib
@@ -83,17 +94,20 @@ package_libva-mesa-driver() {
 package_mesa() {
   pkgdesc="an open-source implementation of the OpenGL specification"
   depends=('libdrm' 'wayland' 'libxxf86vm' 'libxdamage' 'libxshmfence' 'libelf' 
-           'libomxil-bellagio' 'libgcrypt' 'libtxc_dxtn' 'llvm-libs')
+           'libomxil-bellagio' 'libtxc_dxtn' 'llvm-libs' 'lm_sensors' 'libglvnd')
   optdepends=('opengl-man-pages: for the OpenGL API man pages'
               'mesa-vdpau: for accelerated video playback'
               'libva-mesa-driver: for accelerated video playback')
-  provides=('ati-dri' 'intel-dri' 'nouveau-dri' 'svga-dri' 'mesa-dri')
-  conflicts=('ati-dri' 'intel-dri' 'nouveau-dri' 'svga-dri' 'mesa-dri')
-  replaces=('ati-dri' 'intel-dri' 'nouveau-dri' 'svga-dri' 'mesa-dri')
+  provides=('ati-dri' 'intel-dri' 'nouveau-dri' 'svga-dri' 'mesa-dri' 'mesa-libgl' 'opengl-driver')
+  conflicts=('ati-dri' 'intel-dri' 'nouveau-dri' 'svga-dri' 'mesa-dri' 'mesa-libgl')
+  replaces=('ati-dri' 'intel-dri' 'nouveau-dri' 'svga-dri' 'mesa-dri' 'mesa-libgl')
 
   install -m755 -d ${pkgdir}/etc
   cp -rv ${srcdir}/fakeinstall/etc/drirc ${pkgdir}/etc
   
+  install -m755 -d ${pkgdir}/usr/share/glvnd/egl_vendor.d
+  cp -rv ${srcdir}/fakeinstall/usr/share/glvnd/egl_vendor.d/50_mesa.json ${pkgdir}/usr/share/glvnd/egl_vendor.d/
+
   install -m755 -d ${pkgdir}/usr/lib/xorg/modules/dri
   # ati-dri, nouveau-dri, intel-dri, svga-dri, swrast
   cp -av ${srcdir}/fakeinstall/usr/lib/xorg/modules/dri/* ${pkgdir}/usr/lib/xorg/modules/dri
@@ -106,50 +120,16 @@ package_mesa() {
 
   cp -rv ${srcdir}/fakeinstall/usr/include ${pkgdir}/usr
   cp -rv ${srcdir}/fakeinstall/usr/lib/pkgconfig ${pkgdir}/usr/lib/
-  rm ${pkgdir}/usr/lib/pkgconfig/{egl,gl,glesv1_cm,glesv2}.pc
-
+  
   # remove vulkan headers
   rm -rf ${pkgdir}/usr/include/vulkan
 
-  install -m755 -d ${pkgdir}/usr/lib/mesa
-  # move libgl/EGL/glesv*.so to not conflict with blobs - may break .pc files ?
-  cp -rv ${srcdir}/fakeinstall/usr/lib/libGL.so* 	${pkgdir}/usr/lib/mesa/
-  cp -rv ${srcdir}/fakeinstall/usr/lib/libEGL.so* 	${pkgdir}/usr/lib/mesa/
-  cp -rv ${srcdir}/fakeinstall/usr/lib/libGLES*.so*	${pkgdir}/usr/lib/mesa/
+  # libglvnd support
+  cp -rv ${srcdir}/fakeinstall/usr/lib/libGLX_mesa.so* ${pkgdir}/usr/lib/
+  cp -rv ${srcdir}/fakeinstall/usr/lib/libEGL_mesa.so* ${pkgdir}/usr/lib/
+  # indirect rendering
+  ln -s /usr/lib/libGLX_mesa.so.0 ${pkgdir}/usr/lib/libGLX_indirect.so.0
 
   install -m755 -d "${pkgdir}/usr/share/licenses/mesa"
   install -m644 "${srcdir}/LICENSE" "${pkgdir}/usr/share/licenses/mesa/"
-}
-
-package_mesa-libgl() {
-  pkgdesc="Mesa 3-D graphics library"
-  depends=('mesa')
-  provides=('libgl' 'libgles' 'libegl')
-  conflicts=('libgl' 'libgles' 'libegl')
-
-  install -m755 -d ${pkgdir}/usr/lib/pkgconfig
-  cp ${srcdir}/fakeinstall/usr/lib/pkgconfig/{egl,gl,glesv1_cm,glesv2}.pc ${pkgdir}/usr/lib/pkgconfig
- 
-  # See FS#26284
-  install -m755 -d "${pkgdir}/usr/lib/xorg/modules/extensions"
-  ln -s libglx.xorg "${pkgdir}/usr/lib/xorg/modules/extensions/libglx.so"
-
-  ln -s /usr/lib/mesa/libGL.so.1.2.0 ${pkgdir}/usr/lib/libGL.so.1.2.0
-  ln -s libGL.so.1.2.0	             ${pkgdir}/usr/lib/libGL.so.1
-  ln -s libGL.so.1.2.0               ${pkgdir}/usr/lib/libGL.so
-
-  ln -s /usr/lib/mesa/libEGL.so.1.0.0 ${pkgdir}/usr/lib/libEGL.so.1.0.0
-  ln -s libEGL.so.1.0.0	              ${pkgdir}/usr/lib/libEGL.so.1
-  ln -s libEGL.so.1.0.0               ${pkgdir}/usr/lib/libEGL.so
-
-  ln -s /usr/lib/mesa/libGLESv1_CM.so.1.1.0 ${pkgdir}/usr/lib/libGLESv1_CM.so.1.1.0
-  ln -s libGLESv1_CM.so.1.1.0	            ${pkgdir}/usr/lib/libGLESv1_CM.so.1
-  ln -s libGLESv1_CM.so.1.1.0               ${pkgdir}/usr/lib/libGLESv1_CM.so
-
-  ln -s /usr/lib/mesa/libGLESv2.so.2.0.0 ${pkgdir}/usr/lib/libGLESv2.so.2.0.0
-  ln -s libGLESv2.so.2.0.0               ${pkgdir}/usr/lib/libGLESv2.so.2
-  ln -s libGLESv2.so.2.0.0               ${pkgdir}/usr/lib/libGLESv2.so
-
-  install -m755 -d "${pkgdir}/usr/share/licenses/mesa-libgl"
-  install -m644 "${srcdir}/LICENSE" "${pkgdir}/usr/share/licenses/mesa-libgl/"
 }

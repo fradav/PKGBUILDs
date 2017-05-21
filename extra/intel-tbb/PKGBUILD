@@ -1,5 +1,6 @@
 # $Id$
-# Maintainer: Stéphane Gaudreault <stephane@archlinux.org>
+# Maintainer:
+# Contributor: Stéphane Gaudreault <stephane@archlinux.org>
 # Contributor: Thomas Dziedzic < gostrc at gmail >
 # Contributor: Denis Martinez <deuns.martinez AT gmail.com>
 
@@ -10,8 +11,8 @@
 buildarch=12
 
 pkgname=intel-tbb
-pkgver=2017_20161128
-_tag=tbb${pkgver/\./}oss
+pkgver=2017_20170412
+_pkgver=2017_U6
 _file=${_tag}_src.tgz
 pkgrel=1
 pkgdesc='High level abstract threading library'
@@ -19,11 +20,11 @@ arch=(i686 x86_64)
 url='http://www.threadingbuildingblocks.org/'
 license=(GPL)
 depends=(gcc-libs)
-source=(http://threadingbuildingblocks.org/sites/default/files/software_releases/source/$_file)
-sha1sums=('2c451a5bcf6fc31487b98b4b29651c369874277c')
+source=(https://github.com/01org/tbb/archive/$_pkgver.tar.gz)
+sha256sums=('1f7df7af6045179a45eba9b5dfde74d185ee7f573328f103c137696f81e4ae5a')
 
 build() {
-  cd $_tag
+  cd tbb-$_pkgver
   export CXXFLAGS+=" -fno-lifetime-dse" # FS#49898
   [[ $CARCH == "armv7h" ]] && CXXFLAGS+=" -DTBB_USE_GCC_BUILTINS=1 -D__TBB_64BIT_ATOMICS=0"
   [[ $CARCH == "aarch64" ]] && CXXFLAGS+=" -DTBB_USE_GCC_BUILTINS=1 -D__TBB_64BIT_ATOMICS=1"
@@ -31,7 +32,7 @@ build() {
 }
 
 package() {
-  cd $_tag
+  cd tbb-$_pkgver
   install -d "$pkgdir"/usr/lib
   install -m755 build/linux_*/*.so* "$pkgdir"/usr/lib
   install -d "$pkgdir"/usr/include

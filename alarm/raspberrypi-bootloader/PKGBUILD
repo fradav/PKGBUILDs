@@ -5,15 +5,15 @@ buildarch=28
 pkgbase=raspberrypi-bootloader
 pkgname=('raspberrypi-bootloader'
          'raspberrypi-bootloader-x')
-pkgver=20170215
+pkgver=20170515
 pkgrel=1
-_commit=3fb63c413cabfddb7fb9ed286bfc62abe73cc310
+_commit=73f44c607b48b6c7af89aa3cc034fa3d93d98379
 arch=('any')
 url="https://github.com/raspberrypi/firmware"
 license=('custom')
 options=(!strip)
 source=("https://github.com/raspberrypi/firmware/archive/${_commit}.tar.gz")
-md5sums=('375e6d13d0f506383b521cdb60dd8f6b')
+md5sums=('a63a94ea269b7f68052a652b7f8c799a')
 
 package_raspberrypi-bootloader() {
   pkgdesc="Bootloader files for Raspberry Pi"

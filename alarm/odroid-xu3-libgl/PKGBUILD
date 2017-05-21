@@ -5,9 +5,9 @@ buildarch=4
 
 pkgbase=odroid-xu3-libgl
 pkgname=("${pkgbase}-x11" "${pkgbase}-fb" "${pkgbase}-headers")
-pkgver=r14p0
-pkgrel=2
-_commit=04f078e70fd62a49bc1eeec2434e802d29119797
+pkgver=r17p0
+pkgrel=1
+_commit=e3fbb79c1df377da21b38bd4f57ae1289c59e480
 arch=('armv7h')
 url="http://www.hardkernel.com/"
 license=('Proprietary')

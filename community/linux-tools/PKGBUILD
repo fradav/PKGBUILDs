@@ -5,6 +5,7 @@
 #  - removed x86_energy_perf_policy and turbostat build/package, uses x86 asm
 #  - removed numactl dep
 #  - use tarball source
+#  - add GPIO and IIO utilities packages
 
 pkgbase=linux-tools
 pkgname=(
@@ -15,13 +16,15 @@ pkgname=(
   'perf'
   'tmon'
   'usbip'
+  'gpio-utils'
+  'iio-utils'
 )
-pkgver=4.9
-pkgrel=2
+pkgver=4.11
+pkgrel=1
 license=('GPL2')
 arch=('i686' 'x86_64')
 url='https://www.kernel.org'
-options=('!strip')
+options=('!strip' '!distcc')
 makedepends=('git')
 # split packages need all package dependencies set manually in makedepends
 # kernel source deps
@@ -36,13 +39,14 @@ makedepends+=('glib2' 'sysfsutils' 'udev')
 makedepends+=('ncurses')
 groups=("$pkgbase")
 source=("https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-${pkgver}.tar.xz"
-        'https://cdn.kernel.org/pub/linux/kernel/v4.x/patch-4.9.9.xz'
+        #'https://cdn.kernel.org/pub/linux/kernel/v4.x/patch-4.9.9.xz'
+        '571299d099dcce0ff32c76e70e32e0ba01e55adc.diff::https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/patch/tools/iio?id=571299d099dcce0ff32c76e70e32e0ba01e55adc'
         'cpupower.default'
         'cpupower.systemd'
         'cpupower.service'
         'usbipd.service')
-md5sums=('0a68ef3615c64bd5ee54a3320e46667d'
-         '7248f04515b22e23540afab0850ac9a4'
+md5sums=('251a5deee0fa6daf3f356b1bbda9eab8'
+         '6c0bdf6ebe33ca5b3ba4ea1a5668051b'
          '56883c159381ba89e50ab8ea65efec77'
          '34f5ecc19770a1abbcd0fd65bfd1f065'
          '86c4e419e4ba80835c330d49ba3f56ad'
@@ -60,6 +64,8 @@ prepare() {
       patch -p1 -N -i "$srcdir/${filename##*/}"
     fi
   done
+  # revert breaking commit for IIO utils
+  patch -p1 -Ri ../571299d099dcce0ff32c76e70e32e0ba01e55adc.diff
 }
 
 build() {
@@ -102,6 +108,16 @@ build() {
 
   msg2 'cgroup_event_listener'
   pushd linux-$pkgver/tools/cgroup
+  make
+  popd
+
+  msg2 'gpio'
+  pushd linux-$pkgver/tools/gpio
+  make -j1
+  popd
+
+  msg2 'iio'
+  pushd linux-$pkgver/tools/iio
   make
   popd
 }
@@ -209,6 +225,22 @@ package_cgroup_event_listener() {
 
   cd linux-$pkgver/tools/cgroup
   install -Dm755 cgroup_event_listener "$pkgdir/usr/bin/cgroup_event_listener"
+}
+
+package_gpio-utils() {
+  pkgdesc='GPIO character device utilities'
+  depends=('glibc')
+
+  cd linux-$pkgver/tools/gpio
+  make install DESTDIR="$pkgdir"
+}
+
+package_iio-utils() {
+  pkgdesc='Industrial IO utilities'
+  depends=('glibc')
+
+  cd linux-$pkgver/tools/iio
+  make install INSTALL_ROOT="$pkgdir"
 }
 
 # vim:set ts=2 sw=2 et:
